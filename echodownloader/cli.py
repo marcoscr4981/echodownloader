@@ -6,6 +6,7 @@ from argparse import ArgumentParser, Namespace
 from .config import PROJECT_NAME, VERSION_PROJECT
 from .core import  download_youtube_file, download_youtube_url
 from .model.parser import Parser
+from .utils.screen_colors import RESET_COLOR, RUNNING_COLOR
 
 
 def config_argparse() -> ArgumentParser:
@@ -20,7 +21,7 @@ def config_argparse() -> ArgumentParser:
     group.add_argument('-u', '--url', type=str, help='URL de un video de YouTube')
     group.add_argument('-f', '--file', type=str, help='Archivo con una lista de URLs')
     parser.add_argument('-d', '--delay', type=float, help='Tiempo de espera entre descargas (en segundos)')
-    parser.add_argument('-v', '--version', action='version', version=f"{PROJECT_NAME} {VERSION_PROJECT}", help=f"Versión de {PROJECT_NAME}")
+    parser.add_argument('-v', '--version', action='version', version=f"{RUNNING_COLOR}{PROJECT_NAME} {VERSION_PROJECT}{RESET_COLOR}", help=f"Versión de {PROJECT_NAME}")
 
     return parser
 

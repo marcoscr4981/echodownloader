@@ -5,11 +5,12 @@ import time
 from .exceptions import EmptyDataException, YouTubeException
 from .model.echomedia import EchoMedia
 from .utils.files import read_urls_from_file, generate_unique_file_path
+from .utils.youtube_parse import parse_url
 from .utils.yt_tools import download_mp3, fetch_video_title
 from .view.display import *
 
 
-def download_youtube_url(url:str, show_banner:bool = True) -> None:
+def download_youtube_url(url:str, youtube_file:bool = False) -> None:
     """Descarga el audio en formato MP3 de un video de YouTube dado su URL.
 
     Args:
@@ -23,12 +24,14 @@ def download_youtube_url(url:str, show_banner:bool = True) -> None:
         print(f"\n[!] No se ha proporcionado como argumento la URL.\n")
         sys.exit(1)
 
-    if show_banner:
+    if youtube_file:
         barnner()
-
-    media = EchoMedia(url)
     
     try:
+        url = parse_url(url)
+
+        media = EchoMedia(url)
+
         show_fetching_info(media)
         title = fetch_video_title(media)
 
@@ -38,7 +41,10 @@ def download_youtube_url(url:str, show_banner:bool = True) -> None:
         download_mp3(media)
         show_download_complete(media)
     except YouTubeException as ex:
-        show_error(str(ex), media)
+        if youtube_file:
+            raise YouTubeException(str(ex))
+        else:
+            show_error(str(ex), media)
     
 
 def download_youtube_file(file_path:str, delay:float = 5) -> None:
@@ -58,11 +64,33 @@ def download_youtube_file(file_path:str, delay:float = 5) -> None:
 
     barnner()
 
+    sumary = {
+        'downloads': 0,
+        'completed': 0,
+        'incorrect': 0
+    }
+
     try:
         url_list = read_urls_from_file(file_path)
-
-        for url in url_list:
-            download_youtube_url(url, show_banner=False)
-            time.sleep(delay)
-    except (EmptyDataException, YouTubeException) as ex:
+    except EmptyDataException as ex:
         show_error(str(ex))
+    except Exception:
+        show_error("Se ha producido un error al acceder al archivo proporcionado")
+        print("\n")
+        sys.exit(1)
+
+    for url in url_list:
+        try:
+            download_youtube_url(url, youtube_file=True)
+            sumary['completed'] += 1
+            time.sleep(delay)
+        except (EmptyDataException, YouTubeException) as ex:
+            show_error(str(ex))
+            sumary['incorrect'] += 1
+        except Exception:
+            show_error(f"Se ha producido un error al acceder a la URL {url}")
+            sumary['incorrect'] += 1
+
+    sumary['downloads'] = sumary['completed'] + sumary['incorrect']
+
+    show_summary(sumary)

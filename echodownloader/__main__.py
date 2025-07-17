@@ -5,7 +5,7 @@ Descarga el audio de videos de YouTube en mp3.
 Utiliza la librería 'yt-dlp' para la descarga.
 
 Autor: Marcos Cuadrado Rey
-Versión: v1.0
+Versión: v1.1
 Licencia: MIT
 """
 import signal
